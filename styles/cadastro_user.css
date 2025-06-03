@@ -1,0 +1,120 @@
+/* Reset básico */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+body {
+  background-color: #f8f8fa;
+}
+
+/* Cabeçalho com fundo vermelho */
+.header {
+  background-color: #f5103b;
+  height: 200px;
+}
+
+/* Centraliza o formulário */
+.login-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: -120px; /* Sobe o formulário para a área vermelha */
+}
+
+/* Estilo da caixa de login */
+.login-box {
+  background-color: #ffffff;
+  padding: 40px 30px;
+  border-radius: 12px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 400px;
+}
+
+.login-box h2 {
+  text-align: center;
+  margin-bottom: 25px;
+  font-size: 22px;
+  color: #333;
+}
+
+/* Inputs e selects */
+.login-box input,
+.login-box select {
+  width: 100%;
+  padding: 12px;
+  margin-bottom: 15px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+/* Botão cadastrar */
+.login-btn {
+  width: 100%;
+  padding: 12px;
+  background-color: #f5103b;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.login-btn:hover {
+  background-color: #c60e32;
+}
+
+/* Link para login */
+.register {
+  text-align: center;
+  margin-top: 15px;
+  font-size: 14px;
+}
+
+.register a {
+  color: #f5103b;
+  text-decoration: none;
+}
+
+.register a:hover {
+  text-decoration: underline;
+}
+
+/* Rodapé */
+.footer {
+  margin-top: 60px;
+  text-align: center;
+  color: #555;
+  font-size: 14px;
+}
+
+.footer a {
+  color: #f5103b;
+  text-decoration: none;
+}
+
+.footer a:hover {
+  text-decoration: underline;
+}
+
+.btn-voltar {
+    background-color: #6c757d;
+    color: white;
+    padding: 12px;
+    margin-top: 10px;
+    width: 100%;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.2s ease-in-out;
+}
+
+.btn-voltar:hover {
+    background-color: #5a6268;
+}

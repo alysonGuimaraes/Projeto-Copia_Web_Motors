@@ -1,3 +1,8 @@
+<?php
+require('configs/checklogin.php');
+?>
+
+
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
@@ -16,19 +21,30 @@
         <a class="navbar-brand fw-bold text-danger" href="#">WebmotorsClone</a>
         <div class="collapse navbar-collapse justify-content-between">
             <ul class="navbar-nav">
-                <li class="nav-item"><a class="nav-link" href="#">Comprar</a></li>
-                <li class="nav-item"><a class="nav-link" href="#">Vender</a></li>
-                <li class="nav-item"><a class="nav-link" href="#">Serviços</a></li>
-                <li class="nav-item"><a class="nav-link" href="#">Notícias</a></li>
+                <li class="nav-item">
+                    <a class="nav-link bi me-1" href="pages/cadastro_veiculo.php">
+                        <i class="bi me-1"></i> Anunciar
+                    </a>
+                </li>
             </ul>
             <form class="d-flex" role="search">
                 <input class="form-control me-2" type="search" placeholder="Busque por marca ou modelo">
                 <button class="btn btn-outline-secondary" type="submit"><i class="bi bi-search"></i></button>
             </form>
-            <div class="ms-3">
-                <i class="bi bi-person-circle fs-4 me-3"></i>
-                <i class="bi bi-heart fs-4 me-3"></i>
-                <i class="bi bi-chat-left-dots fs-4"></i>
+            <div class="ms-3 d-flex align-items-center gap-2">
+                <?php if (!isset($_SESSION["id_usuario"])): ?>
+                    <a href="pages/login.php" class="btn btn-outline-secondary btn-sm">
+                        <i class="bi bi-box-arrow-in-right me-1"></i> Login
+                    </a>
+                    <a href="pages/cadastro_user.php" class="btn btn-outline-primary btn-sm">
+                        <i class="bi bi-person-plus me-1"></i> Cadastre-se
+                    </a>
+                <?php else: ?>
+                    <span class="me-2">Olá, <strong><?= htmlspecialchars($_SESSION["nome_usuario"]) ?></strong></span>
+                    <a href="pages/logout.php" class="btn btn-danger btn-sm">
+                        <i class="bi bi-box-arrow-right me-1"></i> Sair
+                    </a>
+                <?php endif; ?>
             </div>
         </div>
     </nav>
