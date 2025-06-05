@@ -64,7 +64,7 @@ $result = mysqli_query($con, $query);
                     </a>
                 <?php else: ?>
                     <span class="me-2">Olá, <strong><?= htmlspecialchars($_SESSION["nome_usuario"]) ?></strong></span>
-                    <a href="pages/logout.php" class="btn btn-danger btn-sm">
+                    <a href="scripts/logout.php" class="btn btn-danger btn-sm">
                         <i class="bi bi-box-arrow-right me-1"></i> Sair
                     </a>
                 <?php endif; ?>
@@ -135,17 +135,37 @@ $result = mysqli_query($con, $query);
                                         Ano: <?= $anuncio['ano'] ?><br>
                                         Km: <?= $anuncio['quilometragem'] ?> km
                                     </p>
+
                                     <?php if ($usuario_logado && $nivel_usuario === 'USR' && $anuncio['user_id'] == $id_usuario): ?>
-                                        <form method="POST" action="scripts/excluir_anuncio.php">
+                                        <div class="mb-2">
+                                            <strong>Status:</strong>
+                                            <?php
+                                                if (is_null($anuncio['flg_aprovado'])) echo "<span class='text-secondary'>Em análise</span>";
+                                                elseif ($anuncio['flg_aprovado'] == 1) echo "<span class='text-success'>Aprovado</span>";
+                                                else echo "<span class='text-danger'>Reprovado</span>";
+                                            ?>
+                                        </div>
+                                        <form method="POST" action="pages/excluir_anuncio.php">
                                             <input type="hidden" name="id" value="<?= $anuncio['id'] ?>">
                                             <button type="submit" class="btn btn-danger btn-sm w-100">Excluir</button>
                                         </form>
+
                                     <?php elseif ($usuario_logado && $nivel_usuario === 'ADM'): ?>
-                                        <form method="POST" action="scripts/aprovar_anuncio.php" class="d-flex gap-2">
-                                            <input type="hidden" name="id" value="<?= $anuncio['id'] ?>">
-                                            <button type="submit" name="acao" value="aprovar" class="btn btn-success btn-sm w-50">Aprovar</button>
-                                            <button type="submit" name="acao" value="reprovar" class="btn btn-warning btn-sm w-50">Reprovar</button>
-                                        </form>
+                                        <?php if (is_null($anuncio['flg_aprovado'])): ?>
+                                            <form method="POST" action="pages/aprovar_anuncio.php" class="d-flex gap-2">
+                                                <input type="hidden" name="id" value="<?= $anuncio['id'] ?>">
+                                                <button type="submit" name="acao" value="aprovar" class="btn btn-success btn-sm w-50">Aprovar</button>
+                                                <button type="submit" name="acao" value="reprovar" class="btn btn-warning btn-sm w-50">Reprovar</button>
+                                            </form>
+                                        <?php else: ?>
+                                            <div>
+                                                <strong>Status:</strong>
+                                                <?php
+                                                    if ($anuncio['flg_aprovado'] == 1) echo "<span class='text-success'>Aprovado</span>";
+                                                    else echo "<span class='text-danger'>Reprovado</span>";
+                                                ?>
+                                            </div>
+                                        <?php endif; ?>
                                     <?php endif; ?>
                                 </div>
                             </div>

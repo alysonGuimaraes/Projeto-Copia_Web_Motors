@@ -7,6 +7,7 @@ CREATE DATABASE webmotors;
 
 USE webmotors;
 
+/* Tabelas */
 CREATE TABLE users (
     id INT(6) AUTO_INCREMENT PRIMARY KEY,
     username VARCHAR(50) NOT NULL,
@@ -29,3 +30,10 @@ CREATE TABLE anuncios (
     user_id INT(6),
     FOREIGN KEY (user_id) REFERENCES users(id)
 );
+
+
+/* Inserts users */
+
+INSERT INTO users (username, password, phone, email, gender, level) 
+    VALUES ('admin', '21232f297a57a5a743894a0e4a801fc3', '41987654321', 'admin@teste.com', 'Outro', 'ADM');
+
