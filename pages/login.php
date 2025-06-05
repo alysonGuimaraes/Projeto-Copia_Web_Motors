@@ -24,6 +24,11 @@ if (isset($_REQUEST['botao']) && $_REQUEST['botao'] == 'Entrar') {
           header("Location: ../index.php");
           exit;
       }
+
+      if ($level == 'ADM'){
+          header("Location: ../index.php");
+          exit;
+      }
     }    
 }
 ?>

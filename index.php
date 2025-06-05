@@ -1,5 +1,28 @@
 <?php
-require('configs/checklogin.php');
+include('configs/dbconnection.php');
+session_start();
+
+$usuario_logado = isset($_SESSION['id_usuario']);
+$nivel_usuario = $usuario_logado ? $_SESSION['nivelUsuario'] : null;
+$id_usuario = $usuario_logado ? $_SESSION['id_usuario'] : null;
+
+// Filtro "meus anúncios"
+$filtrar_meus = isset($_GET['meus']) && $nivel_usuario === 'USR';
+
+// Monta a query conforme o tipo de usuário
+if (!$usuario_logado) {
+    $query = "SELECT * FROM anuncios WHERE flg_situacao = TRUE";
+} elseif ($nivel_usuario === 'USR') {
+    if ($filtrar_meus) {
+        $query = "SELECT * FROM anuncios WHERE user_id = $id_usuario";
+    } else {
+        $query = "SELECT * FROM anuncios WHERE flg_situacao = TRUE OR user_id = $id_usuario";
+    }
+} elseif ($nivel_usuario === 'ADM') {
+    $query = "SELECT * FROM anuncios";
+}
+
+$result = mysqli_query($con, $query);
 ?>
 
 
@@ -22,7 +45,7 @@ require('configs/checklogin.php');
         <div class="collapse navbar-collapse justify-content-between">
             <ul class="navbar-nav">
                 <li class="nav-item">
-                    <a class="nav-link bi me-1" href="pages/cadastro_veiculo.php">
+                    <a class="nav-link bi me-1" href="pages/cadastro_anuncio.php">
                         <i class="bi me-1"></i> Anunciar
                     </a>
                 </li>
@@ -92,10 +115,43 @@ require('configs/checklogin.php');
             </aside>
 
 
-            <main class="col-9 d-flex justify-content-center align-items-center flex-column text-center">
-                <img src="https://cdn-icons-png.flaticon.com/512/8371/8371263.png" alt="Nenhum resultado" width="200">
-                <h4 class="mt-4">Ops, não encontramos nenhum resultado para a sua busca</h4>
-                <p class="text-muted">Limpe os filtros e tente novamente</p>
+            <main class="col-9">
+                <?php if ($usuario_logado && $nivel_usuario === 'USR'): ?>
+                    <div class="mb-4 text-end">
+                        <a href="?meus=1" class="btn btn-outline-primary btn-sm">Ver Meus Anúncios</a>
+                        <a href="index.php" class="btn btn-outline-secondary btn-sm">Ver Todos</a>
+                    </div>
+                <?php endif; ?>
+
+                <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+                    <?php while ($anuncio = mysqli_fetch_assoc($result)): ?>
+                        <div class="col">
+                            <div class="card h-100 shadow-sm">
+                                <img src="<?= htmlspecialchars($anuncio['imagem']) ?>" class="card-img-top" alt="<?= htmlspecialchars($anuncio['modelo']) ?>">
+                                <div class="card-body">
+                                    <h5 class="card-title"><?= htmlspecialchars($anuncio['modelo']) ?></h5>
+                                    <p class="card-text">
+                                        Marca: <?= htmlspecialchars($anuncio['marca']) ?><br>
+                                        Ano: <?= $anuncio['ano'] ?><br>
+                                        Km: <?= $anuncio['quilometragem'] ?> km
+                                    </p>
+                                    <?php if ($usuario_logado && $nivel_usuario === 'USR' && $anuncio['user_id'] == $id_usuario): ?>
+                                        <form method="POST" action="scripts/excluir_anuncio.php">
+                                            <input type="hidden" name="id" value="<?= $anuncio['id'] ?>">
+                                            <button type="submit" class="btn btn-danger btn-sm w-100">Excluir</button>
+                                        </form>
+                                    <?php elseif ($usuario_logado && $nivel_usuario === 'ADM'): ?>
+                                        <form method="POST" action="scripts/aprovar_anuncio.php" class="d-flex gap-2">
+                                            <input type="hidden" name="id" value="<?= $anuncio['id'] ?>">
+                                            <button type="submit" name="acao" value="aprovar" class="btn btn-success btn-sm w-50">Aprovar</button>
+                                            <button type="submit" name="acao" value="reprovar" class="btn btn-warning btn-sm w-50">Reprovar</button>
+                                        </form>
+                                    <?php endif; ?>
+                                </div>
+                            </div>
+                        </div>
+                    <?php endwhile; ?>
+                </div>
             </main>
         </div>
     </div>

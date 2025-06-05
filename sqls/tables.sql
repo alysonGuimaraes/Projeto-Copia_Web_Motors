@@ -8,7 +8,7 @@ CREATE DATABASE webmotors;
 USE webmotors;
 
 CREATE TABLE users (
-    id INT(4) AUTO_INCREMENT PRIMARY KEY,
+    id INT(6) AUTO_INCREMENT PRIMARY KEY,
     username VARCHAR(50) NOT NULL,
     password VARCHAR(255) NOT NULL,
     phone VARCHAR(15),
@@ -19,13 +19,13 @@ CREATE TABLE users (
 
 
 CREATE TABLE anuncios (
-    id INT(4) AUTO_INCREMENT PRIMARY KEY,
-    nome VARCHAR(100),
+    id INT(6) AUTO_INCREMENT PRIMARY KEY,
+    modelo VARCHAR(30),
     marca VARCHAR(30),
-    ano INT,
-    quilometragem INT,
+    ano VARCHAR(4),
+    quilometragem INT(7),
     imagem VARCHAR(255),
-    situacao BOOLEAN,
-    user_id INT,
+    flg_situacao BOOLEAN,
+    user_id INT(6),
     FOREIGN KEY (user_id) REFERENCES users(id)
 );
