@@ -1,5 +1,11 @@
 <?php
 
+session_start();
+
+$usuario_logado = isset($_SESSION['id_usuario']);
+$nivel_usuario = $usuario_logado ? $_SESSION['nivelUsuario'] : null;
+$id_usuario = $usuario_logado ? $_SESSION['id_usuario'] : null;
+
 require('../configs/dbconnection.php');
 
 if (isset($_REQUEST['botao']) && $_REQUEST['botao'] == 'Cadastrar') {
@@ -8,14 +14,18 @@ if (isset($_REQUEST['botao']) && $_REQUEST['botao'] == 'Cadastrar') {
     $phone = $_POST['telefone'];
     $email = $_POST['email'];
     $gender = $_POST['genero'];
+    $level = $_POST['level'] ? $_POST['level'] : 'USR';
     $hashed_password = md5($password);
 
-    $query = "INSERT INTO users (username, password, phone, email, gender, level) VALUES ('$username', '$hashed_password', '$phone', '$email', '$gender', 'USR')";
+
+    $query = "INSERT INTO users (username, password, phone, email, gender, level) VALUES ('$username', '$hashed_password', '$phone', '$email', '$gender', '$level')";
     $result = mysqli_query($con, $query);
 
-    if ($result) {
+    if ($result && $usuario_logado) {
+        echo "<script>alert('Usuário cadastrado com sucesso!'); window.location.href='../index.php';</script>";
+    } elseif ($result && !$usuario_logado) {
         echo "<script>alert('Usuário cadastrado com sucesso! Redirecionando para login...'); window.location.href='login.php';</script>";
-    } else {
+    }else {
         echo "<script>alert('Ocorreu um erro ao cadastrar o usuário! Tente novamente mais tarde.');</script>";
     }
 }
@@ -50,10 +60,20 @@ if (isset($_REQUEST['botao']) && $_REQUEST['botao'] == 'Cadastrar') {
           <option value="outro">Outro</option>
         </select>
 
+        <?php if ($usuario_logado): ?>
+        <select name="level" required>
+          <option value="" disabled selected>Selecione o nível</option>
+          <option value="USR">Usuário</option>
+          <option value="ADM">Administrador</option>
+        </select>
+        <?php endif; ?>
+
         <button type="submit" class="login-btn" name="botao" value="Cadastrar">Cadastrar</button>
         <button type="button" onclick="window.history.back();" class="btn-voltar">Voltar</button>
 
+        <?php if (!$usuario_logado): ?>
         <p class="register">Já tem uma conta? <a href="login.php">Entre agora</a></p>
+        <?php endif; ?>
       </div>
     </form>
   </div>

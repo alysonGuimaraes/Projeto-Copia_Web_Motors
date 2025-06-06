@@ -64,7 +64,7 @@ $result = mysqli_query($con, $query);
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>Carros à venda</title>
+    <title>Webmotors clone</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <!-- Bootstrap CDN -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -83,6 +83,14 @@ $result = mysqli_query($con, $query);
                         <i class="bi me-1"></i> Anunciar
                     </a>
                 </li>
+
+                <?php if ($usuario_logado && $nivel_usuario === 'ADM'): ?>
+                <li class="nav-item">
+                    <a class="nav-link bi me-1" href="pages/cadastro_user.php">
+                        <i class="bi me-1"></i> Cadastrar usuário
+                    </a>
+                </li>
+                <?php endif; ?>
             </ul>
             <form class="d-flex" role="search" method="GET">
                 <input class="form-control me-2" name="busca" type="search" placeholder="Busque por marca ou modelo" value="<?= $_GET['busca'] ?? '' ?>">
