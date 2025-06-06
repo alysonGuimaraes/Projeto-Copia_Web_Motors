@@ -9,17 +9,51 @@ $id_usuario = $usuario_logado ? $_SESSION['id_usuario'] : null;
 // Filtro "meus anúncios"
 $filtrar_meus = isset($_GET['meus']) && $nivel_usuario === 'USR';
 
-// Monta a query conforme o tipo de usuário
+$where = [];
+
 if (!$usuario_logado) {
-    $query = "SELECT * FROM anuncios WHERE flg_situacao = TRUE";
+    $where[] = "flg_situacao = TRUE";
 } elseif ($nivel_usuario === 'USR') {
     if ($filtrar_meus) {
-        $query = "SELECT * FROM anuncios WHERE user_id = $id_usuario";
+        $where[] = "user_id = $id_usuario";
     } else {
-        $query = "SELECT * FROM anuncios WHERE flg_situacao = TRUE OR user_id = $id_usuario";
+        $where[] = "(flg_situacao = TRUE OR user_id = $id_usuario)";
     }
 } elseif ($nivel_usuario === 'ADM') {
-    $query = "SELECT * FROM anuncios";
+    if (isset($_GET['pendentes'])) {
+        $where[] = "flg_situacao IS NULL";
+    }
+}
+
+// Filtros adicionais
+if (!empty($_GET['marca'])) {
+    $marcas = array_map('mysqli_real_escape_string', array_fill(0, count($_GET['marca']), $con), $_GET['marca']);
+    $where[] = "marca IN ('" . implode("','", $marcas) . "')";
+}
+
+if (!empty($_GET['intervalo_ano'])) {
+    switch ($_GET['intervalo_ano']) {
+        case '1': $where[] = "ano < 1980"; break;
+        case '2': $where[] = "ano BETWEEN 1980 AND 2000"; break;
+        case '3': $where[] = "ano BETWEEN 2000 AND 2010"; break;
+        case '4': $where[] = "ano BETWEEN 2010 AND 2020"; break;
+        case '5': $where[] = "ano > 2020"; break;
+    }
+}
+
+if (!empty($_GET['km_max'])) {
+    $km_max = (int) $_GET['km_max'];
+    $where[] = "quilometragem <= $km_max";
+}
+
+if (!empty($_GET['busca'])) {
+    $busca = mysqli_real_escape_string($con, $_GET['busca']);
+    $where[] = "(modelo LIKE '%$busca%' OR marca LIKE '%$busca%')";
+}
+
+$query = "SELECT * FROM anuncios";
+if (!empty($where)) {
+    $query .= " WHERE " . implode(" AND ", $where);
 }
 
 $result = mysqli_query($con, $query);
@@ -50,10 +84,11 @@ $result = mysqli_query($con, $query);
                     </a>
                 </li>
             </ul>
-            <form class="d-flex" role="search">
-                <input class="form-control me-2" type="search" placeholder="Busque por marca ou modelo">
+            <form class="d-flex" role="search" method="GET">
+                <input class="form-control me-2" name="busca" type="search" placeholder="Busque por marca ou modelo" value="<?= $_GET['busca'] ?? '' ?>">
                 <button class="btn btn-outline-secondary" type="submit"><i class="bi bi-search"></i></button>
             </form>
+
             <div class="ms-3 d-flex align-items-center gap-2">
                 <?php if (!isset($_SESSION["id_usuario"])): ?>
                     <a href="pages/login.php" class="btn btn-outline-secondary btn-sm">
@@ -76,42 +111,46 @@ $result = mysqli_query($con, $query);
         <div class="row">
             <!-- Filtros -->
             <aside class="col-3 px-4">
-                <h6 class="fw-bold mb-3">Filtros aplicados <i class="bi bi-exclamation-circle-fill text-danger"></i></h6>
-                <a href="#" class="d-block text-decoration-none mb-2">Limpar todos</a>
+                <form method="GET" id="filtroForm">
+                    <h6 class="fw-bold mb-3">Filtros <i class="bi bi-exclamation-circle-fill text-danger"></i></h6>
 
-                <div class="btn-group mb-3 w-100" role="group">
-                    <button class="btn btn-dark">Carros</button>
-                    <button class="btn btn-outline-dark">Motos</button>
-                </div>
-
-                <div class="mb-3">
-                    <label class="form-label">Localização</label>
-                    <input type="text" class="form-control" placeholder="Digite sua cidade ou estado">
-                </div>
-
-                <div class="mb-3">
-                    <label class="form-label">Novo/Usado</label>
-                    <div class="form-check">
-                        <input class="form-check-input" type="checkbox" id="novo">
-                        <label class="form-check-label" for="novo">Novos (0)</label>
+                    <div class="mb-3">
+                        <label class="form-label">Marca</label>
+                        <div class="d-flex flex-wrap gap-2">
+                            <?php
+                            $marcas = ["Chevrolet", "Fiat", "Ford", "Honda", "Hyundai", "Mitsubishi"];
+                            foreach ($marcas as $marca): ?>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="marca[]" value="<?= $marca ?>"
+                                        <?= isset($_GET['marca']) && in_array($marca, $_GET['marca']) ? 'checked' : '' ?>>
+                                    <label class="form-check-label"><?= $marca ?></label>
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
                     </div>
-                    <div class="form-check">
-                        <input class="form-check-input" type="checkbox" id="usado">
-                        <label class="form-check-label" for="usado">Usados (0)</label>
-                    </div>
-                </div>
 
-                <div>
-                    <label class="form-label">Marca</label>
-                    <div class="d-flex flex-wrap gap-2">
-                        <span class="brand-box">Chevrolet</span>
-                        <span class="brand-box">Fiat</span>
-                        <span class="brand-box">Ford</span>
-                        <span class="brand-box">Honda</span>
-                        <span class="brand-box">Hyundai</span>
-                        <span class="brand-box">Mitsubishi</span>
+                    <div class="mb-3">
+                        <label class="form-label">Intervalo de Ano</label>
+                        <select name="intervalo_ano" class="form-select">
+                            <option value="">Selecione</option>
+                            <option value="1" <?= $_GET['intervalo_ano'] ?? '' === '1' ? 'selected' : '' ?>>Menor que 1980</option>
+                            <option value="2" <?= $_GET['intervalo_ano'] ?? '' === '2' ? 'selected' : '' ?>>1980 - 2000</option>
+                            <option value="3" <?= $_GET['intervalo_ano'] ?? '' === '3' ? 'selected' : '' ?>>2000 - 2010</option>
+                            <option value="4" <?= $_GET['intervalo_ano'] ?? '' === '4' ? 'selected' : '' ?>>2010 - 2020</option>
+                            <option value="5" <?= $_GET['intervalo_ano'] ?? '' === '5' ? 'selected' : '' ?>>Acima de 2020</option>
+                        </select>
                     </div>
-                </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Quilometragem máxima</label>
+                        <input type="number" name="km_max" class="form-control" value="<?= $_GET['km_max'] ?? '' ?>">
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary">Aplicar Filtros</button>
+                        <a href="index.php" class="btn btn-outline-secondary">Limpar todos</a>
+                    </div>
+                </form>
             </aside>
 
 
@@ -123,10 +162,17 @@ $result = mysqli_query($con, $query);
                     </div>
                 <?php endif; ?>
 
+                <?php if ($usuario_logado && $nivel_usuario === 'ADM'): ?>
+                    <div class="mb-4 text-end">
+                        <a href="?pendentes=1" class="btn btn-outline-warning btn-sm me-2">Ver Somente Pendentes</a>
+                        <a href="index.php" class="btn btn-outline-secondary btn-sm">Ver Todos</a>
+                    </div>
+                <?php endif; ?>
+
                 <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
                     <?php while ($anuncio = mysqli_fetch_assoc($result)): ?>
                         <div class="col">
-                            <div class="card h-100 shadow-sm">
+                            <div class="card h-100 shadow-sm" id="card-<?= $anuncio['id'] ?>">
                                 <img src="<?= htmlspecialchars($anuncio['imagem']) ?>" class="card-img-top" alt="<?= htmlspecialchars($anuncio['modelo']) ?>">
                                 <div class="card-body">
                                     <h5 class="card-title"><?= htmlspecialchars($anuncio['modelo']) ?></h5>
@@ -140,19 +186,19 @@ $result = mysqli_query($con, $query);
                                         <div class="mb-2">
                                             <strong>Status:</strong>
                                             <?php
-                                                if (is_null($anuncio['flg_aprovado'])) echo "<span class='text-secondary'>Em análise</span>";
-                                                elseif ($anuncio['flg_aprovado'] == 1) echo "<span class='text-success'>Aprovado</span>";
+                                                if (is_null($anuncio['flg_situacao'])) echo "<span class='text-secondary'>Em análise</span>";
+                                                elseif ($anuncio['flg_situacao'] == 1) echo "<span class='text-success'>Aprovado</span>";
                                                 else echo "<span class='text-danger'>Reprovado</span>";
                                             ?>
                                         </div>
-                                        <form method="POST" action="pages/excluir_anuncio.php">
+                                        <form method="POST" action="scripts/excluir_anuncio.php">
                                             <input type="hidden" name="id" value="<?= $anuncio['id'] ?>">
                                             <button type="submit" class="btn btn-danger btn-sm w-100">Excluir</button>
                                         </form>
 
                                     <?php elseif ($usuario_logado && $nivel_usuario === 'ADM'): ?>
-                                        <?php if (is_null($anuncio['flg_aprovado'])): ?>
-                                            <form method="POST" action="pages/aprovar_anuncio.php" class="d-flex gap-2">
+                                        <?php if (is_null($anuncio['flg_situacao'])): ?>
+                                            <form method="POST" action="scripts/aprovar_anuncio.php" class="d-flex gap-2">
                                                 <input type="hidden" name="id" value="<?= $anuncio['id'] ?>">
                                                 <button type="submit" name="acao" value="aprovar" class="btn btn-success btn-sm w-50">Aprovar</button>
                                                 <button type="submit" name="acao" value="reprovar" class="btn btn-warning btn-sm w-50">Reprovar</button>
@@ -161,12 +207,15 @@ $result = mysqli_query($con, $query);
                                             <div>
                                                 <strong>Status:</strong>
                                                 <?php
-                                                    if ($anuncio['flg_aprovado'] == 1) echo "<span class='text-success'>Aprovado</span>";
+                                                    if ($anuncio['flg_situacao'] == 1) echo "<span class='text-success'>Aprovado</span>";
                                                     else echo "<span class='text-danger'>Reprovado</span>";
                                                 ?>
                                             </div>
                                         <?php endif; ?>
                                     <?php endif; ?>
+                                    <button onclick="imprimirAnuncio('card-<?= $anuncio['id'] ?>')" class="btn btn-outline-dark btn-sm mt-2 w-100">
+                                        <i class="bi bi-printer me-1"></i> Imprimir Anúncio
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -175,6 +224,35 @@ $result = mysqli_query($con, $query);
             </main>
         </div>
     </div>
+
+    <script>
+        function imprimirAnuncio(cardId) {
+            const card = document.getElementById(cardId);
+            const conteudo = card.innerHTML;
+            const win = window.open('', '_blank', 'width=800,height=600');
+
+            win.document.write(`
+                <html>
+                    <head>
+                        <title>Impressão de Anúncio</title>
+                        <style>
+                            body { font-family: Arial, sans-serif; padding: 20px; }
+                            img { max-width: 100%; height: auto; }
+                            button { display: none; }
+                        </style>
+                    </head>
+                    <body>
+                        ${conteudo}
+                    </body>
+                </html>
+            `);
+            
+            win.document.close();
+            win.focus(); 
+            win.print(); 
+            win.close();
+        }
+    </script>
 
 </body>
 </html>

@@ -33,11 +33,11 @@ if (isset($_REQUEST['botao']) && $_REQUEST['botao'] == 'Cadastrar') {
             if ($result) {
                 echo "<script>alert('Veículo cadastrado com sucesso!'); window.location.href='../index.php';</script>";
             } else {
-                echo "Erro ao cadastrar: " . mysqli_error($con);
+                echo "<script>alert('Erro ao cadastrar veículo! Tente novamente mais tarde.');</script>";
             }
 
         } else {
-            echo "Erro ao fazer upload da imagem.";
+            echo "<script>alert('Erro ao tentar realizar upload da imagem!');</script>";
         }
 
     } else {

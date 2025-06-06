@@ -14,9 +14,9 @@ if (isset($_REQUEST['botao']) && $_REQUEST['botao'] == 'Cadastrar') {
     $result = mysqli_query($con, $query);
 
     if ($result) {
-        echo "Usuário cadastrado com sucesso!";
+        echo "<script>alert('Usuário cadastrado com sucesso! Redirecionando para login...'); window.location.href='login.php';</script>";
     } else {
-        echo "Erro: " . $sql . "<br>" . $conn->error;
+        echo "<script>alert('Ocorreu um erro ao cadastrar o usuário! Tente novamente mais tarde.');</script>";
     }
 }
 ?>

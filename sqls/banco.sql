@@ -34,6 +34,15 @@ CREATE TABLE anuncios (
 
 /* Inserts users */
 
+-- senha: admin
 INSERT INTO users (username, password, phone, email, gender, level) 
-    VALUES ('admin', '21232f297a57a5a743894a0e4a801fc3', '41987654321', 'admin@teste.com', 'Outro', 'ADM');
+    VALUES ('admin', '21232f297a57a5a743894a0e4a801fc3', '41987654321', 'admin@teste.com', 'Outro', 'ADM'); 
+
+-- senha: 123
+INSERT INTO users (username, password, phone, email, gender, level) 
+    VALUES ('Alyson', '202cb962ac59075b964b07152d234b70', '41987654321', 'admin@teste.com', 'Masculino', 'USR');
+
+-- senha: 123
+INSERT INTO users (username, password, phone, email, gender, level) 
+    VALUES ('Karol', '202cb962ac59075b964b07152d234b70', '41987654321', 'admin@teste.com', 'Feminino', 'USR');
 

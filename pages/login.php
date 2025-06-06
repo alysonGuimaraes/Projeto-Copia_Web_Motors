@@ -2,7 +2,6 @@
 include('../configs/dbconnection.php');
 session_start();
 
-
 if (isset($_REQUEST['botao']) && $_REQUEST['botao'] == 'Entrar') {
     $username = $_POST['username'];
     $password = $_POST['password'];
@@ -11,25 +10,18 @@ if (isset($_REQUEST['botao']) && $_REQUEST['botao'] == 'Entrar') {
     $sql = "SELECT * FROM users WHERE username = '$username' AND password = '$password_encrypted'";
     $result = mysqli_query($con, $sql);
 
-    echo "Caminhando";
+    if (mysqli_num_rows($result) > 0) {
+        while ($linha = mysqli_fetch_array($result)) {
+            $_SESSION["id_usuario"] = $linha["id"];
+            $_SESSION["nome_usuario"] = $linha["username"];
+            $_SESSION["nivelUsuario"] = $linha["level"];
 
-    while ($linha=mysqli_fetch_array($result)){
-      $_SESSION["id_usuario"]=$linha["id"];
-      $_SESSION["nome_usuario"]=$linha["username"];
-      $_SESSION["nivelUsuario"]=$linha["level"];
-
-      $level = $linha['level'];
-          
-      if ($level == 'USR'){
-          header("Location: ../index.php");
-          exit;
-      }
-
-      if ($level == 'ADM'){
-          header("Location: ../index.php");
-          exit;
-      }
-    }    
+            header("Location: ../index.php");
+            exit;
+        }
+    } else {
+        echo "<script>alert('Usuário não existe ou senha incorreta! Tente novamente.');</script>";
+    }
 }
 ?>
 
